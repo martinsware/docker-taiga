@@ -2,13 +2,15 @@
 # https://github.com/taigaio/taiga-back/blob/master/settings/common.py
 from .common import *
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('TAIGA_DB_NAME'),
-        'HOST': os.getenv('TAIGA_DB_HOST'),
-        'USER': os.getenv('TAIGA_DB_USER'),
-        'PASSWORD': os.getenv('TAIGA_DB_PASSWORD')
+        'NAME': os.getenv('TAIGA_DB_NAME') or os.getenv('RDS_HOSTNAME'),
+        'HOST': os.getenv('TAIGA_DB_HOST') or os.getenv('RDS_DB_NAME'),
+        'USER': os.getenv('TAIGA_DB_USER') or os.getenv('RDS_USERNAME'),
+        'PASSWORD': os.getenv('TAIGA_DB_PASSWORD') or os.getenv('RDS_PASSWORD'),
+        'PORT': os.getenv('TAIGA_DB_PORT') or os.getenv('RDS_PORT') or '5432'
     }
 }
 

@@ -1,5 +1,5 @@
 FROM python:3.5
-MAINTAINER Benjamin Hutchins <ben@hutchins.co>
+MAINTAINER Ben Yanke <ben@benyanke.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
