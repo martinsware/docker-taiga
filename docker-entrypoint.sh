@@ -14,20 +14,23 @@ if [ -z "$TAIGA_SKIP_DB_CHECK" ]; then
   if [ $DB_CHECK_STATUS -eq 1 ]; then
     echo "Failed to connect to database server or database does not exist."
     exit 1
-  elif [ $DB_CHECK_STATUS -eq 2 ]; then
+  fi
+
+  # Database migration check should be done in all startup in case of backend upgrade
+  echo "Check for database migration"
+  python manage.py migrate --noinput
+
+  if [ $DB_CHECK_STATUS -eq 2 ]; then
     echo "Configuring initial database"
-    python manage.py migrate --noinput
     python manage.py loaddata initial_user
     python manage.py loaddata initial_project_templates
     python manage.py loaddata initial_role
-    python manage.py compilemessages
   fi
 fi
 
-# Look for static folder, if it does not exist, then generate it
-if [ ! -d "/usr/src/taiga-back/static" ]; then
-  python manage.py collectstatic --noinput
-fi
+# In case of frontend upgrade, locales and statics should be regenerated
+python manage.py compilemessages
+python manage.py collectstatic --noinput
 
 # Automatically replace "TAIGA_HOSTNAME" with the environment variable
 sed -i "s/TAIGA_HOSTNAME/$TAIGA_HOSTNAME/g" /taiga/conf.json
@@ -59,5 +62,5 @@ fi
 # nginx -g "daemon off;"
 service nginx start
 
-# Start Taiga backend Django server
+# Start gunicorn  server
 exec "$@"

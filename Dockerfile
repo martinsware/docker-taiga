@@ -58,13 +58,16 @@ ENV LANG C
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN echo "LANG=en_US.UTF-8" > /etc/default/locale
-RUN echo "LC_TYPE=en_US.UTF-8" > /etc/default/locale
+RUN echo "LANG=en_US.UTF-8" >> /etc/default/locale
+RUN echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
+RUN echo "LC_TYPE=en_US.UTF-8" >> /etc/default/locale
 RUN echo "LC_MESSAGES=POSIX" >> /etc/default/locale
 RUN echo "LANGUAGE=en" >> /etc/default/locale
 
 ENV LANG en_US.UTF-8
 ENV LC_TYPE en_US.UTF-8
+
+RUN locale-gen en_US.UTF-8 && locale -a
 
 ENV TAIGA_SSL False
 ENV TAIGA_ENABLE_EMAIL False
@@ -86,4 +89,4 @@ VOLUME /usr/src/taiga-back/media
 COPY checkdb.py /checkdb.py
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "-w 3", "-t 60", "--pythonpath=.", "-b 127.0.0.1:8000", "taiga.wsgi"]
