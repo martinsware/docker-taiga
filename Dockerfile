@@ -3,13 +3,22 @@ MAINTAINER Benjamin Hutchins <ben@hutchins.co>
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Version of Nginx to install
+ENV NGINX_VERSION 1.9.7-1~jessie
+
+RUN apt-key adv \
+  --keyserver hkp://pool.sks-keyservers.net:80 \
+  --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
+
+RUN echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list
+
 RUN set -x; \
     apt-get update \
     && apt-get install -y --no-install-recommends \
         locales \
         gettext \
         ca-certificates \
-        nginx \
+        nginx=${NGINX_VERSION} \
     && rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8 && dpkg-reconfigure locales
