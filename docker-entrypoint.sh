@@ -2,19 +2,21 @@
 
 # Sleep when asked to, to allow the database time to start
 # before Taiga tries to run /checkdb.py below.
-: ${TAIGA_SLEEP:=0}
-sleep $TAIGA_SLEEP
+# : ${TAIGA_SLEEP:=0}
+# sleep $TAIGA_SLEEP
 
 # Setup database automatically if needed
 if [ -z "$TAIGA_SKIP_DB_CHECK" ]; then
   echo "Running database check"
-  python /checkdb.py
+  python -u /checkdb.py
   DB_CHECK_STATUS=$?
 
   if [ $DB_CHECK_STATUS -eq 1 ]; then
-    echo "Failed to connect to database server or database does not exist."
     exit 1
   fi
+
+
+  # TODO: check to see what this "-eq 2" is for and it's role
 
   # Database migration check should be done in all startup in case of backend upgrade
   echo "Check for database migration"

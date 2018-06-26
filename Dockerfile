@@ -78,6 +78,23 @@ RUN python manage.py collectstatic --noinput
 
 RUN locale -a
 
+
+## Install Slack extension
+RUN LC_ALL=C pip install --no-cache-dir taiga-contrib-slack && \
+    mkdir -p /usr/src/taiga-front-dist/dist/plugins/slack/ && \
+    SLACK_VERSION=$(pip show taiga-contrib-slack | awk '/^Version: /{print $2}') && \
+    echo "taiga-contrib-slack version: $SLACK_VERSION" && \
+    curl https://raw.githubusercontent.com/taigaio/taiga-contrib-slack/$SLACK_VERSION/front/dist/slack.js -o /usr/src/taiga-front-dist/dist/plugins/slack/slack.js && \
+    curl https://raw.githubusercontent.com/taigaio/taiga-contrib-slack/$SLACK_VERSION/front/dist/slack.json -o /usr/src/taiga-front-dist/dist/plugins/slack/slack.json
+
+## Install LDAP extension (only one will be used, selected in config too)
+# RUN pip install --no-cache-dir taiga-contrib-ldap-auth-ext
+
+# Hack to allow newer version (needed until author of original package deploys the most recent version to pip)
+RUN pip install --no-cache-dir git+git://github.com/benyanke/taiga-contrib-ldap-auth-ext.git
+
+
+
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log

@@ -1,5 +1,9 @@
 import os, sys, psycopg2, time
 
+# Checks the DB connection and blocks until the db comes online and returns a query,
+# or until the timeout (~1min). Most of the time, the DB is available in 3-5 seconds,
+# so 1 minute is more than enough.
+
 DB_NAME = os.getenv('TAIGA_DB_NAME')
 DB_HOST = os.getenv('TAIGA_DB_HOST')
 DB_USER = os.getenv('TAIGA_DB_USER')
@@ -10,29 +14,38 @@ conn_string = (
     "' user='" + DB_USER +
     "' host='" + DB_HOST +
     "' password='" + DB_PASS + "'")
-print("Connecting to database:\n" + conn_string)
-conn = psycopg2.connect(conn_string)
-cur = conn.cursor()
 
-tryLimit = 60
-tryCount = 0
-sleepSeconds = 1
+# Background polling settings
+tryLimit =  250
+sleepSeconds = 0.25
+
+print("Waiting for database to come online. Polling every " + str(sleepSeconds) + " seconds in the background until it's online")
 
 # Keep trying to connect until the retry limit is reached or connection success
+tryCount = 0
 while True:
-    cur.execute("select * from information_schema.tables where table_name=%s", ('django_migrations',))
-    exists = bool(cur.rowcount)
+    try:
+        conn = None
+        conn = psycopg2.connect(conn_string)
+        exists = (conn.closed == 0)
+
+    except psycopg2.Error as e:
+        # uncomment this line for debugging
+        # print([e, e.pgcode, e.pgerror])
+        exists = False
 
     if exists is False:
 
-        if tryCount++ < tryLimit:
-            print("Database is not yet ready. Connection attempt " + tryCount + " of " tryLimit + ". Sleeping for " + sleepSeconds + " seconds and trying again.\n")
+        tryCount += 1
+
+        if tryCount < tryLimit:
+            # uncomment this line for debugging
+            # print("Database is not yet ready. Connection attempt " + str(tryCount) + " of " + str(tryLimit) + ". Sleeping for " + str(sleepSeconds) + " seconds and trying again.\n")
             time.sleep(sleepSeconds)
         else:
-            print("\n\nDatabase wait timeout reached after " + tryLimit + " attempts. Exiting.")
-            sys.exit(2)
+            print("Database wait timeout reached. Exiting.")
+            sys.exit(1)
 
     else:
-        print("Database is ready. Continuing with setup.\n\n")
+        print("Database is ready.")
         sys.exit(0)
-
