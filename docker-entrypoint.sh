@@ -1,32 +1,26 @@
 #!/bin/bash
 
-# Sleep when asked to, to allow the database time to start
-# before Taiga tries to run /checkdb.py below.
-# : ${TAIGA_SLEEP:=0}
-# sleep $TAIGA_SLEEP
-
 # Setup database automatically if needed
 if [ -z "$TAIGA_SKIP_DB_CHECK" ]; then
   echo "Running database check"
   python -u /checkdb.py
   DB_CHECK_STATUS=$?
 
-  if [ $DB_CHECK_STATUS -eq 1 ]; then
+  # If database did not come online, exit the container with error
+  if [ $DB_CHECK_STATUS -eq 2 ]; then
     exit 1
   fi
-
-
-  # TODO: check to see what this "-eq 2" is for and it's role
 
   # Database migration check should be done in all startup in case of backend upgrade
   echo "Check for database migration"
   python manage.py migrate --noinput
 
-  if [ $DB_CHECK_STATUS -eq 2 ]; then
+  # Run the initial data seeder functions if we're starting with a fresh database
+  if [ $DB_CHECK_STATUS -eq 1 ]; then
     echo "Configuring initial database"
-    python manage.py loaddata initial_user
+    # python manage.py loaddata initial_user
     python manage.py loaddata initial_project_templates
-    python manage.py loaddata initial_role
+    # python manage.py loaddata initial_role
   fi
 fi
 
@@ -36,6 +30,16 @@ python manage.py collectstatic --noinput
 
 # Automatically replace "TAIGA_HOSTNAME" with the environment variable
 sed -i "s/TAIGA_HOSTNAME/$TAIGA_HOSTNAME/g" /taiga/conf.json
+sed -i "s/DEBUG_STATE/$DEBUG/g" /taiga/conf.json
+sed -i "s/ALLOW_PUBLIC_REGISTRATION/$PUBLIC_REGISTER_ENABLED/g" /taiga/conf.json
+
+# convert to lowercase
+LDAP_ENABLED="$(echo $LDAP_ENABLED | sed -e 's/\(.*\)/\L\1/')"
+if [ "$LDAP_ENABLED" = "true" ]; then
+  sed -i 's/LOGIN_FORM_TYPE/"loginFormType": "ldap",/g' /taiga/conf.json
+else
+  sed -i 's/LOGIN_FORM_TYPE//g' /taiga/conf.json
+fi
 
 # Look to see if we should set the "eventsUrl"
 if [ ! -z "$RABBIT_PORT_5672_TCP_ADDR" ]; then

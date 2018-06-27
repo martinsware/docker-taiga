@@ -6,21 +6,13 @@ ENV DEBIAN_FRONTEND noninteractive
 # Version of Nginx to install
 ENV NGINX_VERSION 1.9.7-1~jessie
 
-# Cut out the keyservers altogether and use the key directly
-RUN curl -O https://nginx.org/keys/nginx_signing.key && apt-key add nginx_signing.key && rm -f nginx_signing.key
-
-# Keyservers sometimes have issues. Retry serveral times on fail
-# RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 || \
-#    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 || \
-#    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 || \
-#    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62 || \
-#    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62
-
-RUN echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list
-
-RUN set -x; \
-    apt-get update \
-    && apt-get install -y --no-install-recommends \
+RUN curl -O https://nginx.org/keys/nginx_signing.key && \
+    apt-key add nginx_signing.key && \
+    rm -f nginx_signing.key && \
+    echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list && \
+    set -x && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
         locales \
         gettext \
         ca-certificates \
@@ -42,8 +34,8 @@ COPY conf/nginx/taiga-events.conf /etc/nginx/taiga-events.conf
 RUN mkdir -p /taiga
 COPY conf/taiga/local.py /taiga/local.py
 COPY conf/taiga/conf.json /taiga/conf.json
-RUN ln -s /taiga/local.py /usr/src/taiga-back/settings/local.py
-RUN ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/conf.json
+RUN ln -s /taiga/local.py /usr/src/taiga-back/settings/local.py && \
+    ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/conf.json
 
 # Backwards compatibility
 RUN mkdir -p /usr/src/taiga-front-dist/dist/js/
@@ -57,27 +49,6 @@ WORKDIR /usr/src/taiga-back
 ENV LANG C
 
 RUN pip install --no-cache-dir -r requirements.txt
-
-RUN echo "LANG=en_US.UTF-8" >> /etc/default/locale
-RUN echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale
-RUN echo "LC_TYPE=en_US.UTF-8" >> /etc/default/locale
-RUN echo "LC_MESSAGES=POSIX" >> /etc/default/locale
-RUN echo "LANGUAGE=en" >> /etc/default/locale
-
-ENV LANG en_US.UTF-8
-ENV LC_TYPE en_US.UTF-8
-
-RUN locale-gen en_US.UTF-8 && locale -a
-
-ENV TAIGA_SSL False
-ENV TAIGA_ENABLE_EMAIL False
-ENV TAIGA_HOSTNAME localhost
-ENV TAIGA_SECRET_KEY "!!!REPLACE-ME-j1598u1J^U*(y251u98u51u5981urf98u2o5uvoiiuzhlit3)!!!"
-
-RUN python manage.py collectstatic --noinput
-
-RUN locale -a
-
 
 ## Install Slack extension
 RUN LC_ALL=C pip install --no-cache-dir taiga-contrib-slack && \
@@ -93,11 +64,29 @@ RUN LC_ALL=C pip install --no-cache-dir taiga-contrib-slack && \
 # Hack to allow newer version (needed until author of original package deploys the most recent version to pip)
 RUN pip install --no-cache-dir git+git://github.com/benyanke/taiga-contrib-ldap-auth-ext.git
 
+RUN echo "LANG=en_US.UTF-8" >> /etc/default/locale && \
+    echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale && \
+    echo "LC_TYPE=en_US.UTF-8" >> /etc/default/locale && \
+    echo "LC_MESSAGES=POSIX" >> /etc/default/locale && \
+    echo "LANGUAGE=en" >> /etc/default/locale
 
+ENV LANG en_US.UTF-8
+ENV LC_TYPE en_US.UTF-8
+
+RUN locale-gen en_US.UTF-8 && locale -a
+
+ENV TAIGA_SSL False
+ENV TAIGA_ENABLE_EMAIL False
+ENV TAIGA_HOSTNAME localhost
+ENV TAIGA_SECRET_KEY "!!!REPLACE-ME-j1598u1J^U*(y251u98u51u5981urf98u2o5uvoiiuzhlit3)!!!"
+
+RUN python manage.py collectstatic --noinput
+
+RUN locale -a
 
 # forward request and error logs to docker log collector
-RUN ln -sf /dev/stdout /var/log/nginx/access.log
-RUN ln -sf /dev/stderr /var/log/nginx/error.log
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
+    ln -sf /dev/stderr /var/log/nginx/error.log
 
 EXPOSE 80 443
 

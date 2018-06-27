@@ -2,56 +2,113 @@ version: '2'
 
 services:
   taiga:
-    build: .
+    container_name: ${CONTAINER_NAME_BASE}-app
+    
+    # use 'image' to use the remote pre-built image
+    image: benyanke/taiga:combine
+
+    # use 'build' to build your own image from this repo
+    # build: .
+
     ports:
       - 80:80
-      # - 443:443 # To enable SSL, uncomment this line
+      # - 443:443 # To enable SSL, uncomment this line. See "Enable SSL" below.
     depends_on:
+      # Main database
+      # - ${CONTAINER_NAME_BASE}-db
       - postgres
+
+      # Taiga-events
+      #- events
+      #- rabbit
+      #- redis
+    links:
+      - postgres:${CONTAINER_NAME_BASE}-db
+    environment:
+
+      # Enable public registration
+      PUBLIC_REGISTER_ENABLED: ${PUBLIC_REGISTER_ENABLED}
+
+      DEBUG: ${DEBUG}
+      TEMPLATE_DEBUG: ${TEMPLATE_DEBUG}
+
+      TAIGA_HOSTNAME: ${TAIGA_HOSTNAME}
+      ALLOWED_REGISTER_DOMAINS: ${ALLOWED_REGISTER_DOMAINS}
+
+      LDAP_ENABLED: ${LDAP_ENABLED}
+      LDAP_HOST: ${LDAP_HOST}
+      LDAP_BIND_DN: ${LDAP_BIND_DN}
+      LDAP_BIND_PW: ${LDAP_BIND_PW}
+      LDAP_SEARCH_BASE: ${LDAP_SEARCH_BASE}
+
+      LDAP_ATTR_USERNAME: ${LDAP_ATTR_USERNAME}
+      LDAP_ATTR_EMAIL: ${LDAP_ATTR_EMAIL}
+      LDAP_ATTR_FULLNAME: ${LDAP_ATTR_FULLNAME}
+
+      # Database variables. Required.
+      TAIGA_DB_HOST: ${CONTAINER_NAME_BASE}-db
+      TAIGA_DB_NAME: taigadb
+      TAIGA_DB_USER: taiga
+      TAIGA_DB_PASSWORD: password
+
+      # Mail config
+      TAIGA_ENABLE_EMAIL: ${TAIGA_ENABLE_EMAIL}
+      TAIGA_EMAIL_HOST: ${TAIGA_EMAIL_HOST}
+      TAIGA_EMAIL_FROM: ${TAIGA_EMAIL_FROM}
+      TAIGA_EMAIL_USE_TLS: ${TAIGA_EMAIL_USE_TLS}
+      TAIGA_EMAIL_PORT: ${TAIGA_EMAIL_PORT}
+      TAIGA_EMAIL_USER: ${TAIGA_EMAIL_USER}
+      TAIGA_EMAIL_PASS: ${TAIGA_EMAIL_PASS}
+
+      # DB Config
+      TAIGA_DB_HOST: ${CONTAINER_NAME_BASE}-db
+      TAIGA_DB_NAME: taigadb
+      TAIGA_DB_USER: taiga
+      TAIGA_DB_PASSWORD: password
+
+      # Secret key for encryption
+      TAIGA_SECRET_KEY: ${TAIGA_SECRET_KEY}
+
+      # Enable SSL internally, within the Docker container. Optional.
+      # This is not great. I suggest using something on top of this
+      # to enable SSL. See the example example-nginx-ssl.conf file
+      # for an alternative way to enable SSL.
+      # TAIGA_SSL: 'True'
+
+      # Enable SSL externally, preferred method
+      # TAIGA_SSL_BY_REVERSE_PROXY: 'True'
     volumes:
-      # I recommend specifying a volume that maps to taiga's media,
-      # this way uploaded files are not lost during upgrades of the taiga image
+      # Media and uploads directory. Required (or you will lose all uploads)
       - ./media:/usr/src/taiga-back/media
 
-      # If you'd like to store the configuration outside of the container,
-      # uncomment this volume. This allows for easy changes to the configuration.
-      # - ./conf/taiga:/taiga
-
-      # - ./ssl.crt:/etc/nginx/ssl/ssl.crt:ro # To enable SSL, uncomment this line
-      # - ./ssl.key:/etc/nginx/ssl/ssl.key:ro # To enable SSL, uncomment this line
-    environment:
-      # Your hostname (REQUIRED)
-      TAIGA_HOSTNAME: localhost
-
-      # Database settings
-      # To use an external database, simply update these and remove the postgres
-      # service from this docker-compose.yml file
-      TAIGA_DB_NAME: taigadb
-      TAIGA_DB_HOST: postgres
-      TAIGA_DB_USER: postgres
-      TAIGA_DB_PASSWORD: password
-      TAIGA_SLEEP: 15 # when the db comes up from docker, it is usually too quick
-
-      # TAIGA_SSL: True # To enable SSL, uncomment this line
-      # TAIGA_SSL_BY_REVERSE_PROXY: True # To enable SSL, handling by a reverse proxy, uncomment this
-
-      # To use an external SMTP for emails, fill in these values:
-      # TAIGA_ENABLE_EMAIL: True
-      # TAIGA_EMAIL_FROM: no-reply@taiga.mycompany.net
-      # TAIGA_EMAIL_USE_TLS: True
-      # TAIGA_EMAIL_HOST: smtp.google.com
-      # TAIGA_EMAIL_PORT: 587
-      # TAIGA_EMAIL_USER: me@gmail.com
-      # TAIGA_EMAIL_PASS: super-secure-pass phrase thing!
+      # Taiga configuration directory. Makes it easier to change configuration.
+      # - ./taiga-conf/local.py:/taiga/local.py
+      # - ./taiga-conf/conf.json:/taiga/conf.json
 
   postgres:
+    container_name: ${CONTAINER_NAME_BASE}-db
     image: postgres
     environment:
       POSTGRES_DB: taigadb
+      POSTGRES_USER: taiga
       POSTGRES_PASSWORD: password
-      POSTGRES_USER: postgres
     ports:
-      - 5432
+      - 5432:5432
     volumes:
-      # this helps prevent your postgres data from deleted
+      # Postgres data directory. This ensures the database is not lost.
       - ./pgdata:/var/lib/postgresql/data
+
+# To enable taiga-events, uncomment the following lines:
+#  rabbit:
+#    image: rabbitmq:3
+#    hostname: rabbit
+#  redis:
+#    image: redis:3
+#  celery:
+#    image: celery
+#    links:
+#      - rabbit
+#  events:
+#    image: benhutchins/taiga-events
+#    links:
+#      - rabbit
