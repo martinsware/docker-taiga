@@ -5,7 +5,7 @@ services:
     container_name: ${CONTAINER_NAME_BASE}-app
     
     # use 'image' to use the remote pre-built image
-    image: benyanke/taiga:combine
+    image: benyanke/taiga:latest
 
     # use 'build' to build your own image from this repo
     # build: .
