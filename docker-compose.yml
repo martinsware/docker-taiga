@@ -18,6 +18,8 @@ services:
     # use 'build' to build your own image from this repo
     # build: .
 
+    restart: always
+
     expose:
       - 80
     depends_on:
@@ -124,6 +126,7 @@ services:
     volumes:
       # Postgres data directory. This ensures the database is not lost on container restart
       - ./pgdata:/var/lib/postgresql/data
+    restart: always
     labels:
       - traefik.enable=false
     networks:
