@@ -48,12 +48,16 @@ if [ ! -z "$RABBIT_PORT_5672_TCP_ADDR" ]; then
   mv /etc/nginx/taiga-events.conf /etc/nginx/conf.d/default.conf
 fi
 
+# Convert vars to lowercase
+TAIGA_SSL_BY_REVERSE_PROXY="$(echo $TAIGA_SSL_BY_REVERSE_PROXY | sed -e 's/\(.*\)/\L\1/')"
+TAIGA_SSL="$(echo $TAIGA_SSL | sed -e 's/\(.*\)/\L\1/')"
+
 # Handle enabling/disabling SSL
-if [ "$TAIGA_SSL_BY_REVERSE_PROXY" = "True" ]; then
+if [ "$TAIGA_SSL_BY_REVERSE_PROXY" = "true" ]; then
   echo "Enabling external SSL support! SSL handling must be done by a reverse proxy or a similar system"
   sed -i "s/http:\/\//https:\/\//g" /taiga/conf.json
   sed -i "s/ws:\/\//wss:\/\//g" /taiga/conf.json
-elif [ "$TAIGA_SSL" = "True" ]; then
+elif [ "$TAIGA_SSL" = "true" ]; then
   echo "Enabling SSL support!"
   sed -i "s/http:\/\//https:\/\//g" /taiga/conf.json
   sed -i "s/ws:\/\//wss:\/\//g" /taiga/conf.json

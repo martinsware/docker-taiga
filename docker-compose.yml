@@ -1,8 +1,16 @@
-version: '2'
+version: '3.5'
+
+networks:
+  proxy:
+    external:
+      name: proxy
+  internal:
+    name: internal
+
 
 services:
   taiga:
-    container_name: ${CONTAINER_NAME_BASE}-app
+#    container_name: ${CONTAINER_NAME_BASE}-app
     
     # use 'image' to use the remote pre-built image
     image: benyanke/taiga:latest
@@ -10,12 +18,9 @@ services:
     # use 'build' to build your own image from this repo
     # build: .
 
-    ports:
-      - 80:80
-      # - 443:443 # To enable SSL, uncomment this line. See "Enable SSL" below.
+    expose:
+      - 80
     depends_on:
-      # Main database
-      # - ${CONTAINER_NAME_BASE}-db
       - postgres
 
       # Taiga-events
@@ -24,8 +29,24 @@ services:
       #- redis
     links:
       - postgres:${CONTAINER_NAME_BASE}-db
-    environment:
+    labels:
+      - traefik.backend=taiga
+      - traefik.frontend.rule=Host:${TAIGA_HOSTNAME}
 
+      # - traefik.backend.circuitbreaker.expression=NetworkErrorRatio() > 0.5
+
+      # - traefik.backend.healthcheck.path=/api/v1/
+      # - traefik.backend.healthcheck.port=80
+      # - traefik.backend.healthcheck.interval=5s
+
+      - traefik.docker.network=proxy
+      - traefik.port=80
+    networks:
+      - proxy
+      - internal
+
+
+    environment:
       # Enable public registration
       PUBLIC_REGISTER_ENABLED: ${PUBLIC_REGISTER_ENABLED}
 
@@ -33,6 +54,7 @@ services:
       TEMPLATE_DEBUG: ${TEMPLATE_DEBUG}
 
       TAIGA_HOSTNAME: ${TAIGA_HOSTNAME}
+
       ALLOWED_REGISTER_DOMAINS: ${ALLOWED_REGISTER_DOMAINS}
 
       LDAP_ENABLED: ${LDAP_ENABLED}
@@ -76,14 +98,18 @@ services:
       # TAIGA_SSL: 'True'
 
       # Enable SSL externally, preferred method
-      # TAIGA_SSL_BY_REVERSE_PROXY: 'True'
+      TAIGA_SSL_BY_REVERSE_PROXY: ${TAIGA_SSL_BY_REVERSE_PROXY}
+
     volumes:
       # Media and uploads directory. Required (or you will lose all uploads)
       - ./media:/usr/src/taiga-back/media
 
       # Taiga configuration directory. Makes it easier to change configuration.
-      # - ./taiga-conf/local.py:/taiga/local.py
-      # - ./taiga-conf/conf.json:/taiga/conf.json
+      # Typically you don't need to modify these, as they autogenerate based on env
+      # env vars on every run
+      # - ./local.py:/taiga/local.py
+      # - ./conf.json:/taiga/conf.json
+
 
   postgres:
     container_name: ${CONTAINER_NAME_BASE}-db
@@ -92,12 +118,18 @@ services:
       POSTGRES_DB: taigadb
       POSTGRES_USER: taiga
       POSTGRES_PASSWORD: password
-    ports:
-      - 5432:5432
+    # Uncomment this to expose the DB
+    # ports:
+    #   - 5432:5432
     volumes:
-      # Postgres data directory. This ensures the database is not lost.
+      # Postgres data directory. This ensures the database is not lost on container restart
       - ./pgdata:/var/lib/postgresql/data
+    labels:
+      - traefik.enable=false
+    networks:
+      - internal
 
+# Note: this is not fully tested
 # To enable taiga-events, uncomment the following lines:
 #  rabbit:
 #    image: rabbitmq:3
