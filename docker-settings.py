@@ -37,19 +37,19 @@ DATABASES = {
 
 TAIGA_HOSTNAME = os.getenv('TAIGA_HOSTNAME')
 
+if getenv_bool("TAIGA_SSL") or getenv_bool("TAIGA_SSL_BY_REVERSE_PROXY"):
+    PROTOCOL = 'https'
+else:
+    PROTOCOL = 'http'
+
 SITES['api']['domain'] = TAIGA_HOSTNAME
 SITES['front']['domain'] = TAIGA_HOSTNAME
 
-MEDIA_URL  = 'http://' + TAIGA_HOSTNAME + '/media/'
-STATIC_URL = 'http://' + TAIGA_HOSTNAME + '/static/'
+SITES['api']['scheme'] = PROTOCOL
+SITES['front']['scheme'] = PROTOCOL
 
-if getenv_bool("TAIGA_SSL") or getenv_bool("TAIGA_SSL_BY_REVERSE_PROXY"):
-# if ("TAIGA_SSL" in os.environ and os.getenv('TAIGA_SSL').lower() == 'true') or ("TAIGA_SSL_BY_REVERSE_PROXY" in os.environ and os.getenv('TAIGA_SSL_BY_REVERSE_PROXY').lower() == 'true'):
-    SITES['api']['scheme'] = 'https'
-    SITES['front']['scheme'] = 'https'
-
-    MEDIA_URL  = 'https://' + TAIGA_HOSTNAME + '/media/'
-    STATIC_URL = 'https://' + TAIGA_HOSTNAME + '/static/'
+MEDIA_URL  = PROTOCOL + '://' + TAIGA_HOSTNAME + '/media/'
+STATIC_URL = PROTOCOL + '://' + TAIGA_HOSTNAME + '/static/'
 
 SECRET_KEY = os.getenv('TAIGA_SECRET_KEY')
 
