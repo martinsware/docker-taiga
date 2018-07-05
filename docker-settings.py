@@ -77,6 +77,7 @@ if getenv_bool('TAIGA_ENABLE_EMAIL'):
     CHANGE_NOTIFICATIONS_MIN_INTERVAL = int(os.getenv('TAIGA_EMAIL_NOTIFICATIONS_INTERVAL')) or 300
 
     DEFAULT_FROM_EMAIL = os.getenv('TAIGA_EMAIL_FROM')
+    SERVER_EMAIL = os.getenv('TAIGA_EMAIL_FROM')
     CHANGE_NOTIFICATIONS_MIN_INTERVAL = 300 # in seconds
 
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

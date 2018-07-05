@@ -32,7 +32,7 @@ services:
     links:
       - postgres:${CONTAINER_NAME_BASE}-db
     labels:
-      - traefik.backend=taiga
+      - traefik.backend=${TAIGA_HOSTNAME}
       - traefik.frontend.rule=Host:${TAIGA_HOSTNAME}
 
       # - traefik.backend.circuitbreaker.expression=NetworkErrorRatio() > 0.5
@@ -76,7 +76,6 @@ services:
       TAIGA_DB_PASSWORD: password
 
       # Mail config
-      TAIGA_EMAIL_NOTIFICATIONS_INTERVAL: ${TAIGA_EMAIL_NOTIFICATIONS_INTERVAL}
       TAIGA_ENABLE_EMAIL: ${TAIGA_ENABLE_EMAIL}
       TAIGA_EMAIL_HOST: ${TAIGA_EMAIL_HOST}
       TAIGA_EMAIL_FROM: ${TAIGA_EMAIL_FROM}
@@ -111,7 +110,7 @@ services:
       # Typically you don't need to modify these, as they autogenerate based on env
       # env vars on every run
       # - ./local.py:/taiga/local.py
-      # - ./conf.json:/taiga/conf.json
+      - ./conf.json:/taiga/conf.json
 
 
   postgres:
