@@ -72,6 +72,10 @@ if os.getenv('RABBIT_PORT') is not None and os.getenv('REDIS_PORT') is not None:
 #########################################
 
 if getenv_bool('TAIGA_ENABLE_EMAIL'):
+
+    # In seconds
+    CHANGE_NOTIFICATIONS_MIN_INTERVAL = int(os.getenv('TAIGA_EMAIL_NOTIFICATIONS_INTERVAL')) or 300
+
     DEFAULT_FROM_EMAIL = os.getenv('TAIGA_EMAIL_FROM')
     CHANGE_NOTIFICATIONS_MIN_INTERVAL = 300 # in seconds
 
