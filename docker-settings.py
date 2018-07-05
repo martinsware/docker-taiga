@@ -77,11 +77,7 @@ if getenv_bool('TAIGA_ENABLE_EMAIL'):
 
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-    if getenv_bool('TAIGA_EMAIL_USE_TLS'):
-        EMAIL_USE_TLS = True
-    else:
-        EMAIL_USE_TLS = False
-
+    EMAIL_USE_TLS = getenv_bool('TAIGA_EMAIL_USE_TLS'):
     EMAIL_HOST = os.getenv('TAIGA_EMAIL_HOST')
     EMAIL_PORT = int(os.getenv('TAIGA_EMAIL_PORT'))
     EMAIL_HOST_USER = os.getenv('TAIGA_EMAIL_USER')
