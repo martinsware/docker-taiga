@@ -165,6 +165,10 @@ if getenv_bool('LDAP_ENABLED'):
     LDAP_EMAIL_ATTRIBUTE = os.getenv('LDAP_ATTR_EMAIL')
     LDAP_FULL_NAME_ATTRIBUTE = os.getenv('LDAP_ATTR_FULLNAME')
 
+    # This setting allows users to authenticate using local auth as well (external users not in LDAP)
+    if getenv_bool("LDAP_ALLOW_NON_LDAP_LOGIN"):
+        LDAP_FALLBACK = "normal"
+
     # MAP TO LOWERCASE
     # TODO: CLEANUP THESE FUNCTIONS
     def _ldap_slugify(id: str) -> str:
