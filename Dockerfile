@@ -92,6 +92,14 @@ EXPOSE 80 443
 
 VOLUME /usr/src/taiga-back/media
 
+
+# Static file serving
+HEALTHCHECK CMD curl --fail http://localhost:80/conf.json || exit 1
+
+# DB Backend
+# HEALTHCHECK CMD curl --fail http://localhost:80/api/v1/ || exit 1
+
+
 COPY checkdb.py /checkdb.py
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
