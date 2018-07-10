@@ -3,6 +3,7 @@
     "eventsUrl": null,
     "debug": DEBUG_STATE,
     "debugInfo": DEBUG_STATE,
+    "themes": ["taiga", "material-design", "high-contrast"],
     "defaultLanguage": "en",
     "publicRegisterEnabled": ALLOW_PUBLIC_REGISTRATION,
     "gravatar": false,
