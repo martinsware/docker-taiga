@@ -131,10 +131,15 @@ if getenv_bool('LDAP_ENABLED'):
     # see https://github.com/benyanke/taiga-contrib-ldap-auth-ext
     INSTALLED_APPS += ["taiga_contrib_ldap_auth_ext"]
 
-    # TODO: add options for LDAPS
-    LDAP_SERVER = 'ldap://' + os.getenv('LDAP_HOST')
-    LDAP_PORT = 389
-    LDAP_START_TLS = False
+    LDAP_START_TLS = getenv_bool('LDAP_START_TLS')
+
+    if getenv_bool('LDAP_USE_SSL'):
+        LDAP_PROTOCOL = 'ldaps'
+    else:
+        LDAP_PROTOCOL = 'ldap'
+
+    LDAP_SERVER = LDAP_PROTOCOL + '://' + os.getenv('LDAP_HOST')
+    LDAP_PORT = int(os.getenv('LDAP_PORT'))
 
     # Full DN of the service account use to connect to LDAP server and search for login user's account entry
     # If LDAP_BIND_DN is not specified, or is blank, then an anonymous bind is attempated
