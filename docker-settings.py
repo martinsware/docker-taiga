@@ -139,7 +139,9 @@ if getenv_bool('LDAP_ENABLED'):
         LDAP_PROTOCOL = 'ldap'
 
     LDAP_SERVER = LDAP_PROTOCOL + '://' + os.getenv('LDAP_HOST')
-    LDAP_PORT = int(os.getenv('LDAP_PORT'))
+
+    if os.getenv('LDAP_PORT') is not None:
+        LDAP_PORT = int(os.getenv('LDAP_PORT'))
 
     # Full DN of the service account use to connect to LDAP server and search for login user's account entry
     # If LDAP_BIND_DN is not specified, or is blank, then an anonymous bind is attempated
