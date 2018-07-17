@@ -3,20 +3,13 @@ MAINTAINER Ben Yanke <ben@benyanke.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Version of Nginx to install
-ENV NGINX_VERSION 1.9.7-1~jessie
-
-RUN curl -O https://nginx.org/keys/nginx_signing.key && \
-    apt-key add nginx_signing.key && \
-    rm -f nginx_signing.key && \
-    echo "deb http://nginx.org/packages/mainline/debian/ jessie nginx" >> /etc/apt/sources.list && \
-    set -x && \
+RUN set -x && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
         locales \
         gettext \
         ca-certificates \
-        nginx=${NGINX_VERSION} \
+        nginx \
     && rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8 && dpkg-reconfigure locales
@@ -38,8 +31,7 @@ RUN ln -s /taiga/local.py /usr/src/taiga-back/settings/local.py && \
     ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/conf.json
 
 # Backwards compatibility
-RUN mkdir -p /usr/src/taiga-front-dist/dist/js/
-RUN ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/js/conf.json
+RUN mkdir -p /usr/src/taiga-front-dist/dist/js/ && ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/js/conf.json
 
 WORKDIR /usr/src/taiga-back
 
