@@ -167,6 +167,9 @@ if getenv_bool('LDAP_ENABLED'):
     # USED BY taiga_contrib_ldap_auth_ext
     ###########
 
+    # Extra LDAP filter to use when searching for user account
+    LDAP_SEARCH_FILTER_ADDITIONAL = os.getenv('LDAP_SEARCH_FILTER')
+
     # Names of LDAP properties on user account to get email nd full name
     LDAP_USERNAME_ATTRIBUTE = os.getenv('LDAP_ATTR_USERNAME')
     LDAP_EMAIL_ATTRIBUTE = os.getenv('LDAP_ATTR_EMAIL')
