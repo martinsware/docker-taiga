@@ -51,10 +51,10 @@ RUN LC_ALL=C pip install --no-cache-dir taiga-contrib-slack && \
     curl https://raw.githubusercontent.com/taigaio/taiga-contrib-slack/$SLACK_VERSION/front/dist/slack.json -o /usr/src/taiga-front-dist/dist/plugins/slack/slack.json
 
 ## Install LDAP extension (only one will be used, selected in config too)
-# RUN pip install --no-cache-dir taiga-contrib-ldap-auth-ext
+RUN pip install --no-cache-dir taiga-contrib-ldap-auth-ext
 
-# Hack to allow newer version (needed until author of original package deploys the most recent version to pip)
-RUN pip install --no-cache-dir git+git://github.com/benyanke/taiga-contrib-ldap-auth-ext.git
+# Use this instead of the one above to use the fork (which may have features not yet released in the one above)
+# RUN pip install --no-cache-dir git+git://github.com/benyanke/taiga-contrib-ldap-auth-ext.git
 
 RUN echo "LANG=en_US.UTF-8" >> /etc/default/locale && \
     echo "LC_ALL=en_US.UTF-8" >> /etc/default/locale && \
