@@ -12,6 +12,9 @@ This image has been deeply changed from it's original upstream, benhutchins/dock
 To start in the meantime, copy `env.sample` to `.env`, configure `.env`, and run `docker-compose up`. Sorry for the current lacking documentation.
 
 To develop or build locally, you'll also need the frontend and backend submodules, which will be fetched by running: `git submodule init && git submodule update`. However, this step isn't needed if you simply want to use `benyanke/taiga` on docker-hub.
+
+
+
 =============================
 
 # How to use this image
