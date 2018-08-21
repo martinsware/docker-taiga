@@ -113,7 +113,7 @@ services:
       # Typically you don't need to modify these, as they autogenerate based on env
       # env vars on every run
       # - ./local.py:/taiga/local.py
-      - ./conf.json:/taiga/conf.json
+      # - ./conf.json:/taiga/conf.json
 
 
   postgres:
