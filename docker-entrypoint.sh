@@ -24,6 +24,11 @@ if [ -z "$TAIGA_SKIP_DB_CHECK" ]; then
   fi
 fi
 
+# Copy the config file fresh so that it works properly even if container is
+# kept around for another run
+rm -rf /taiga/conf.json;
+cp /taiga/conf-orig.json /taiga/conf.json || exit 1
+
 # In case of frontend upgrade, locales and statics should be regenerated
 python manage.py compilemessages
 python manage.py collectstatic --noinput
@@ -92,8 +97,12 @@ elif grep -q "wss://" "/taiga/conf.json"; then
   sed -i "s/wss:\/\//ws:\/\//g" /taiga/conf.json
 fi
 
+# Nicely format json file after rewriting it w/ bash
+mv /taiga/conf.json /tmp/conf.json
+cat /tmp/conf.json | python -m json.tool > /taiga/conf.json
+
+
 # Start nginx service (need to start it as background process)
-# nginx -g "daemon off;"
 service nginx start
 
 # Start gunicorn  server

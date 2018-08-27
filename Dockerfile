@@ -14,6 +14,11 @@ RUN set -x && \
 
 RUN locale-gen en_US.UTF-8 && dpkg-reconfigure locales
 
+WORKDIR /usr/src/taiga-back
+COPY taiga-back/requirements.txt /usr/src/taiga-back/
+RUN pip install --no-cache-dir -r requirements.txt
+
+
 COPY taiga-back /usr/src/taiga-back
 COPY taiga-front-dist/ /usr/src/taiga-front-dist
 COPY docker-settings.py /usr/src/taiga-back/settings/docker.py
@@ -26,21 +31,19 @@ COPY conf/nginx/taiga-events.conf /etc/nginx/taiga-events.conf
 # Setup symbolic links for configuration files
 RUN mkdir -p /taiga
 COPY conf/taiga/local.py /taiga/local.py
-COPY conf/taiga/conf.json /taiga/conf.json
+# COPY conf/taiga/conf.json /taiga/conf.json
+COPY conf/taiga/conf.json /taiga/conf-orig.json
 RUN ln -s /taiga/local.py /usr/src/taiga-back/settings/local.py && \
     ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/conf.json
 
 # Backwards compatibility
 RUN mkdir -p /usr/src/taiga-front-dist/dist/js/ && ln -s /taiga/conf.json /usr/src/taiga-front-dist/dist/js/conf.json
 
-WORKDIR /usr/src/taiga-back
 
 # specify LANG to ensure python installs locals properly
 # fixes benhutchins/docker-taiga-example#4
 # ref benhutchins/docker-taiga#15
 ENV LANG C
-
-RUN pip install --no-cache-dir -r requirements.txt
 
 ## Install Slack extension
 RUN LC_ALL=C pip install --no-cache-dir taiga-contrib-slack && \
