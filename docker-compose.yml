@@ -107,7 +107,7 @@ services:
 #      - internal
 
   postgres:
-    image: postgres
+    image: postgres:10-alpine
     labels:
       - traefik.enable=false
     environment:
