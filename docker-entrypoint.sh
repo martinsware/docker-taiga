@@ -29,6 +29,11 @@ python manage.py compilemessages
 python manage.py collectstatic --noinput
 
 # Automatically replace "TAIGA_HOSTNAME" with the environment variable
+
+# convert to lowercase
+DEBUG="$(echo $DEBUG | sed -e 's/\(.*\)/\L\1/')"
+PUBLIC_REGISTER_ENABLED="$(echo $PUBLIC_REGISTER_ENABLED | sed -e 's/\(.*\)/\L\1/')"
+
 sed -i "s/TAIGA_HOSTNAME/$TAIGA_HOSTNAME/g" /taiga/conf.json
 sed -i "s/DEBUG_STATE/$DEBUG/g" /taiga/conf.json
 sed -i "s/ALLOW_PUBLIC_REGISTRATION/$PUBLIC_REGISTER_ENABLED/g" /taiga/conf.json
