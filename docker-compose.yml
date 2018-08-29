@@ -1,14 +1,23 @@
 version: '3.5'
 
 networks:
-  proxy:
-    external:
-      name: proxy
+
+# Uncomment this if using a proxy network to communicate with a LB
+# Also uncomment the proxy line in the networks section of the 
+# 'taiga' container.
+#  
+#  proxy:
+#    external:
+#      name: proxy
   internal:
 
 services:
   taiga:
+    # use image if you want to use a prebuilt container,
+    # this only requires the docker-compose.yml file and an .env file
     image: benyanke/taiga:latest
+    # Use build if you want to build the container locally
+    # build: .
     restart: always
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/conf.json"]
@@ -16,6 +25,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 0s
+    ports:
+      - 127.0.0.1:8089:80
     expose:
       - 80
     depends_on:
@@ -31,7 +42,7 @@ services:
       - traefik.docker.network=proxy
       - traefik.port=80
     networks:
-      - proxy
+#      - proxy
       - internal
     environment:
       # General
