@@ -109,8 +109,7 @@ PUBLIC_REGISTER_ENABLED = getenv_bool('PUBLIC_REGISTER_ENABLED')
 
 # LIMIT ALLOWED DOMAINS FOR REGISTER AND INVITE
 # None or [] values in USER_EMAIL_ALLOWED_DOMAINS means allow any domain
-# USER_EMAIL_ALLOWED_DOMAINS = os.getenv('ALLOWED_REGISTER_DOMAINS').split(",") or None
-if 'ALLOWED_REGISTER_DOMAINS' in os.environ:
+if 'ALLOWED_REGISTER_DOMAINS' in os.environ and len(os.getenv('ALLOWED_REGISTER_DOMAINS')) > 1:
     USER_EMAIL_ALLOWED_DOMAINS = os.getenv('ALLOWED_REGISTER_DOMAINS').split(",")
 else:
     USER_EMAIL_ALLOWED_DOMAINS = None
@@ -222,7 +221,7 @@ if getenv_bool('LDAP_ENABLED'):
 
 # Note: See config in taiga-front too
 FEEDBACK_ENABLED = False
-#FEEDBACK_EMAIL = "support@taiga.io"
+# FEEDBACK_EMAIL = "support@taiga.io"
 
 
 
