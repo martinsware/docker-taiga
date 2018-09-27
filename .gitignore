@@ -2,3 +2,5 @@ media/
 pgdata/
 *.swp
 *.env
+taiga-back/
+taiga-front-dist/
